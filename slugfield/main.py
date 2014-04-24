@@ -9,22 +9,24 @@ from django.core.exceptions import ValidationError
 
 class SlugFormField(forms.CharField):
 
-    def __init__(self, slugify=None, **kwargs):
-        self.slugify = slugify
+    def __init__(self, **kwargs):
+        self.slugify = kwargs.pop('slugify', slugify)
         super(SlugFormField, self).__init__(**kwargs)
 
     def validate(self, value):
-        print('validate')
+        # print('validate')
         if self.slugify(value) != value:
-            raise ValidationError('hievo')
+            print('invalid 666')
+            raise ValidationError('Invalid')
+        return value
 
 
 class SlugField(models.CharField):
     description = "Slug (up to %(max_length)s)"
 
     def __init__(self, *args, **kwargs):
-        self.from_field = kwargs.pop('from_field', None)
 
+        self.from_field = kwargs.pop('from_field', None)
         self.slugify = kwargs.pop('slugify', slugify)
 
         kwargs.setdefault('unique', True)

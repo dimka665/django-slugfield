@@ -18,4 +18,4 @@ def create_article(request):
     else:
         response = HttpResponse('invalid')
 
-    return HttpResponse(str(article_form.cleaned_data))
+    return response
