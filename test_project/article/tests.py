@@ -1,6 +1,5 @@
-from django.core.exceptions import ValidationError
+
 from django.test import TestCase, Client
-from slugfield.main import SlugFormField
 
 
 class SlugFieldTestCase(TestCase):
@@ -8,15 +7,26 @@ class SlugFieldTestCase(TestCase):
     def setUp(self):
         self.client = Client()
 
-    def test_valid(self):
+    def test_valid_slug(self):
         response = self.client.post('/create-article', {
-            'name': u'Bad slug',
-            'slug': u'bad slug',
+            'name': u'About testing',
+            'slug': u'valid-slug',
         })
-        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'class="errorlist"')
+        self.assertContains(response, 'value="valid-slug"')
 
-    def test_form_field(self):
-        self.assertFieldOutput(SlugFormField,
-            valid={'valid-slug': 'valid-slug'},
-            invalid={'invalid slug': [u'Invalid']},
-        )
+    def test_invalid_slug(self):
+        response = self.client.post('/create-article', {
+            'name': u'About testing',
+            'slug': u'invalid    slug',
+        })
+        self.assertContains(response, 'class="errorlist"')
+        self.assertContains(response, 'value="invalid    slug"')
+
+    def test_empty_slug(self):
+        response = self.client.post('/create-article', {
+            'name': u'About testing',
+            'slug': u'',
+        })
+        self.assertContains(response, 'class="errorlist"')
+        self.assertContains(response, 'value="about-testing?"')

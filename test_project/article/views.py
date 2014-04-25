@@ -13,9 +13,16 @@ class ArticleForm(ModelForm):
 def create_article(request):
     article_form = ArticleForm(request.POST)
 
-    if article_form.is_valid():
-        response = HttpResponse('valid')
-    else:
-        response = HttpResponse('invalid')
+    # if article_form.is_valid():
+    #     pass
+    # else:
+    #     response = HttpResponse('invalid')
+    #
 
-    return response
+    # print('str(form)')
+    string = str(article_form)
+    # print('string: ')
+    print(string)
+    print('')
+    return HttpResponse(string + '\n\n')
+    # return HttpResponse(article_form)
