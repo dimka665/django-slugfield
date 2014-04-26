@@ -5,50 +5,52 @@ import re
 from django import forms
 from django.db import models
 from django.forms.widgets import TextInput
-from django.utils.text import slugify as django_slugify
 from django.core.exceptions import ValidationError
+from django.utils.translation import ugettext_lazy as _
+from django.utils.text import slugify as django_slugify
 
 
 class SlugFormField(forms.CharField):
+    widget = TextInput
+    default_error_message = _("Enter a valid 'slug' consisting of letters, numbers, underscores or hyphens.")
 
-    def __init__(self, slugify=django_slugify, populate_from=None, **kwargs):
+    def __init__(self, slugify=django_slugify, populate_from=None, widget=None, **kwargs):
+
         self.slugify = slugify
+        widget = widget or self.widget
 
-        widget = kwargs.get('widget', TextInput)
-
-        widget_is_class = isinstance(widget, type)
-        if widget_is_class:
+        # widget can be class or object, e.g., TextInput or TextInput({'class': 'big'})
+        # that's why we use decorator instead of inheritance
+        if isinstance(widget, type):
             widget = widget()
 
-        widget_class = widget.__class__
-        def value_from_datadict(data, files, name):
-            value = super(widget_class, widget_self).value_from_datadict(data, files, name)
-            # value = data.get(name)
-            if value:
+        def add_populating(bound_value_from_datadict):
+            def value_from_datadict(data, files, name):
+                value = bound_value_from_datadict(data, files, name)
+                if not value and populate_from:
+                    # change data key from 'option_prefix_<slug>' to 'option_prefix_<populate_from>'
+                    html_name_re = re.compile('({})$'.format(re.escape(name)))
+                    name = html_name_re.sub(populate_from, name)
+                    value = data.get(name, '')
+                    value = self.slugify(value)
+                    if value:
+                        value += '?'
                 return value
-            elif populate_from:
-                # some magic
-                html_name_re = re.compile('({})$'.format(re.escape(name)))
-                name = html_name_re.sub(populate_from, name)
-                value = self.slugify(data.get(name, ''))
-                if value:
-                    value += '?'
-                return value
+            return value_from_datadict
 
-        widget.value_from_datadict = value_from_datadict
+        widget.value_from_datadict = add_populating(widget.value_from_datadict)
         kwargs['widget'] = widget
 
         super(SlugFormField, self).__init__(**kwargs)
 
     def validate(self, value):
         if self.slugify(value) != value:
-            raise ValidationError('Invalid')
+            raise ValidationError(self.default_error_message, code='invalid')
         super(SlugFormField, self).validate(value)
 
 
 class SlugField(models.CharField):
     description = 'Slug (up to %(max_length)s)'
-    default_error_message = "Enter a valid 'slug' consisting of letters, numbers, underscores or hyphens."
 
     def __init__(self, *args, **kwargs):
 
@@ -66,11 +68,9 @@ class SlugField(models.CharField):
 
     def formfield(self, **kwargs):
         defaults = {
-            'form_class': SlugFormField,
             'slugify': self.slugify,
             'populate_from': self.populate_from,
-            # 'widget': TextInput,
-            'widget': TextInput(attrs={'size': '40'}),
+            'form_class': SlugFormField,
         }
         defaults.update(kwargs)
         return super(SlugField, self).formfield(**defaults)
