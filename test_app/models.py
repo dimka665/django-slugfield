@@ -1,7 +1,7 @@
 
 from django.db import models
 
-from slugfield.main import SlugField
+from slugfield import SlugField
 
 
 class Article(models.Model):
