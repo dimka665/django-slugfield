@@ -10,20 +10,18 @@ setup(
     author_email='dimka665@gmail.com',
 
     url='https://github.com/dimka665/django-slugfield',
-    description='...',
+    description='Django manual slug field',
 
     packages=find_packages(),
-    install_requires=[],
 
     license='MIT License',
     classifiers=[
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
     ],
-    keywords='...',
+    keywords='django slugfield slug field slugify url',
 )
