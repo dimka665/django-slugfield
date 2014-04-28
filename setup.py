@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='django-slugfield',
-    version='0.1',
+    version='0.9',
 
     author='Dmitry Voronin',
     author_email='dimka665@gmail.com',
