@@ -2,7 +2,6 @@
 import os
 import sys
 
-
 if __name__ == '__main__':
     from django.conf import settings
 
@@ -20,9 +19,8 @@ if __name__ == '__main__':
 parent_dir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.insert(0, parent_dir)
 
-
 from django.test import TestCase
-from test_app.forms import ArticleModelForm
+from test_app.forms import ArticleModelForm, ArticleForm
 
 
 class ModelFormTestCase(TestCase):
@@ -53,6 +51,39 @@ class ModelFormTestCase(TestCase):
             'slug': u'',
             }
         form = ArticleModelForm(data)
+        form_html = str(form)
+        self.assertIn('class="errorlist"', form_html)
+        self.assertIn('value="about-testing?"', form_html)
+
+
+class FormTestCase(TestCase):
+
+    def test_valid_slug(self):
+        data = {
+            'name': u'About testing',
+            'slug': u'valid-slug',
+            }
+        form = ArticleForm(data)
+        form_html = str(form)
+        self.assertNotIn('class="errorlist"', form_html)
+        self.assertIn('value="valid-slug"', form_html)
+
+    def test_invalid_slug(self):
+        data = {
+            'name': u'About testing',
+            'slug': u'invalid    slug',
+            }
+        form = ArticleForm(data)
+        form_html = str(form)
+        self.assertIn('class="errorlist"', form_html)
+        self.assertIn('value="invalid    slug"', form_html)
+
+    def test_empty_slug(self):
+        data = {
+            'name': u'About testing',
+            'slug': u'',
+            }
+        form = ArticleForm(data)
         form_html = str(form)
         self.assertIn('class="errorlist"', form_html)
         self.assertIn('value="about-testing?"', form_html)
